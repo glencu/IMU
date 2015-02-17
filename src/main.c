@@ -49,15 +49,35 @@
 *******************************************************************************/
 int main(void)
 {
-  DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STOP | DBGMCU_STANDBY, ENABLE);
+	volatile uint8_t tmp=0;
+  DBGMCU_Config( DBGMCU_SLEEP | DBGMCU_STOP | DBGMCU_STANDBY, ENABLE);
   Set_System();
   Set_USBClock();
   USB_Interrupts_Config();
   USB_Init();
   
+    initializeEsp8266pin();
+    GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET);
+    for (tmp = 0 ; tmp < 10 ; tmp++)
+       	  __NOP();
+    GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_SET);
+
   while (1)
   {
   }
+}
+
+void initializeEsp8266pin()
+{
+GPIO_InitTypeDef GPIO_InitStructure;
+RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; // Use the alternative pin functions
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // GPIO speed - has nothing to do with the timer timing
+GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; // Push-pull
+GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL; // Setup pull-up resistors
+GPIO_Init(GPIOB, &GPIO_InitStructure);
+
 }
 #ifdef USE_FULL_ASSERT
 /*******************************************************************************
